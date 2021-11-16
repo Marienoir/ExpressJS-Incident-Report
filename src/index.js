@@ -26,10 +26,7 @@ app.use((req, res) => {
     })
 })
 app.use((err, req, res, next) => {
-    res.status(400).json({
-        status: "Failed",
-        message: err.message
-    })
+    res.send(err.message)
 })
 
 db.connect()

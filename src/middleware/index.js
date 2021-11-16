@@ -1,4 +1,28 @@
-const { getUserIncident } = require('../services')
+const {
+    getUser,
+    getUserIncident
+} = require('../services')
+//const bcrypt = require('bcrypt')
+
+const validateUser = async (req, res, next) => {
+    const {
+        body: {
+            email,
+            password
+        }
+    } = req
+    const user = await getUser(email, password)
+    // const isValid = await bcrypt.compare(password, encryptedPassword)
+    // console.log(isValid);
+    //console.log(password, encryptedPassword, user);
+    if (user.length < 1) {
+        return res.status(404).json({
+            status: "Not Found",
+            message: "Invalid email or password"
+        })
+    }
+    return next()
+}
 
 const validateUserById = async (req, res, next) => {
     const {
@@ -19,32 +43,7 @@ const validateUserById = async (req, res, next) => {
     return next()
 }
 
-const validateData =(data, type) => async(req,res,next) =>{
-    try {
-        const getType = {
-            body: req.body,
-            params: req.params,
-            query: req.query,
-            headers: req.headers
-        }
-        const options = {
-            language:{key: "{{key}}"}
-        }
-        const result = getType[type]
-        const isValid = await data.schema.validate(result,options)
-
-        if (!isValid.error){
-            req[type] = isValid.value;
-            return next()
-        }
-        const {message} = isValid.error.details[0]
-        return res.status(400).json({
-            status:"Error",
-            message:  message.replace(/[\"]/gi,""),
-            error: data.message
-        })
-    } catch (error) {
-        return next(error)
-    }
+module.exports = {
+    validateUser,
+    validateUserById
 }
-module.exports = { validateUserById, validateData }
